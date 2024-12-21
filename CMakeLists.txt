@@ -6,9 +6,11 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory("external/glfw")
 add_subdirectory("external/glm")
 
+project(scuffedcraft VERSION 1.0)
+
 find_package(OpenGL REQUIRED)
 
-project(scuffedcraft VERSION 1.0)
+# Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
