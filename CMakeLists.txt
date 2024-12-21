@@ -5,6 +5,7 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory("external/glfw")
 add_subdirectory("external/glm")
+add_subdirectory("external/FastNoise2")
 
 project(scuffedcraft VERSION 1.0)
 
@@ -19,19 +20,18 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/cmake/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/cmake/archive)
 
+
+# Get all source files with hot reload
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.cpp", "src/*.c")
+
 # Add executable
 add_executable(${PROJECT_NAME} 
-    "src/render/camera.cpp"
-    "src/render/shader.cpp"
-    "src/render/shape.cpp"
-    "src/render/primitives.cpp"
-    "src/glad.c"
-    "src/input.cpp"
-    "src/main.cpp"
+    ${SOURCES}
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
 target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL)
+target_link_libraries(${PROJECT_NAME} PRIVATE FastNoise)
 target_link_libraries(${PROJECT_NAME} PRIVATE glm)
 
 # Include directories

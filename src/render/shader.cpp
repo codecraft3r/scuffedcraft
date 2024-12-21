@@ -16,8 +16,15 @@ namespace cppcraft::render {
         char infoLog[512];
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
         if (!success) {
-            glGetShaderInfoLog(shader, 512, nullptr, infoLog);
-            std::cerr << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
+            int length;
+            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+            char* message = new char[length];
+            glGetShaderInfoLog(shader, length, &length, message);
+            std::cerr << "Failed to compile " << (type == GL_VERTEX_SHADER ? "vertex" : "fragment") << " shader!" << std::endl;
+            std::cerr << message << std::endl;
+            delete[] message;
+            glDeleteShader(shader);
+            return 0;
         }
 
         return shader;

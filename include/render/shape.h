@@ -11,13 +11,13 @@ struct Vertex {
 
 class Shape {
 private:
-    std::vector<Vertex> vertices;
-    std::vector<unsigned int> indices;
     unsigned int VAO, VBO, EBO;
 
     void setupShape();
 
 public:
+    std::vector<Vertex> vertices;
+    std::vector<unsigned int> indices;
     Shape(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
     ~Shape();
     void render();
