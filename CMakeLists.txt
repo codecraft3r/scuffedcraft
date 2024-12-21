@@ -19,10 +19,12 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/cmake/archive)
 
 # Add executable
 add_executable(${PROJECT_NAME} 
-    "src/glad.c"
     "src/render/camera.cpp"
     "src/render/shader.cpp"
     "src/render/shape.cpp"
+    "src/render/primitives.cpp"
+    "src/glad.c"
+    "src/input.cpp"
     "src/main.cpp"
 )
 

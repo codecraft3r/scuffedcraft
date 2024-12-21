@@ -1,17 +1,26 @@
-#include "GLFW/glfw3.h"
+#pragma once
 #include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
 #include <vector>
 
 namespace cppcraft::render {
-    
-    class Shape {
-        private:
-            std::vector<glm::vec3> vertices;
-            std::vector<glm::vec3> colors;
-        
-        public:
-            Shape(std::vector<glm::vec3> vertices, std::vector<glm::vec3> colors);
-            void render();
-    };
+
+struct Vertex {
+    glm::vec3 position;
+    glm::vec3 color;
+};
+
+class Shape {
+private:
+    std::vector<Vertex> vertices;
+    std::vector<unsigned int> indices;
+    unsigned int VAO, VBO, EBO;
+
+    void setupShape();
+
+public:
+    Shape(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
+    ~Shape();
+    void render();
+};
+
 }

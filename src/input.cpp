@@ -5,20 +5,24 @@
 namespace cppcraft {
     float lastX = 400, lastY = 300;
     bool firstMouse = true;
+    bool cursorLocked = false;
 
     void processInput(GLFWwindow* window, render::Camera& camera, float deltaTime) {
-        float cameraSpeed = 2.5f * deltaTime;
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-            camera.position += cameraSpeed * camera.target;
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-            camera.position -= cameraSpeed * camera.target;
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-            camera.position -= glm::normalize(glm::cross(camera.target, camera.up)) * cameraSpeed;
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-            camera.position += glm::normalize(glm::cross(camera.target, camera.up)) * cameraSpeed;
+        bool forward = glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS;
+        bool backward = glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS;
+        bool left = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS;
+        bool right = glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS;
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+            cursorLocked = false;
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        }
+        camera.processKeyboard(deltaTime, forward, backward, left, right);
     }
 
     void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+        if (!cursorLocked) {
+            return;
+        }
         if (firstMouse) {
             lastX = xpos;
             lastY = ypos;
@@ -30,25 +34,14 @@ namespace cppcraft {
         lastX = xpos;
         lastY = ypos;
 
-        float sensitivity = 0.1f;
-        xoffset *= sensitivity;
-        yoffset *= sensitivity;
+        render::Camera* camera = static_cast<render::Camera*>(glfwGetWindowUserPointer(window));
+        camera->processMouseMovement(xoffset, yoffset);
+    }
 
-        static float yaw = -90.0f;
-        static float pitch = 0.0f;
-
-        yaw += xoffset;
-        pitch += yoffset;
-
-        if (pitch > 89.0f)
-            pitch = 89.0f;
-        if (pitch < -89.0f)
-            pitch = -89.0f;
-
-        glm::vec3 direction;
-        direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-        direction.y = sin(glm::radians(pitch));
-        direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-        camera.target = glm::normalize(direction);
+    void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+            cursorLocked = true;
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        }
     }
 }
