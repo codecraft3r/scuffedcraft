@@ -1,5 +1,6 @@
 #include "render/chunk_renderer.h"
-#include "render/primitives.h" // Assuming you have a PrimitiveShapes utility for creating shapes
+#include "render/texture_manager.h"
+#include "render/primitives.h"
 #include <iostream>
 
 namespace cppcraft::render {
@@ -63,9 +64,19 @@ void ChunkRenderer::setupMesh() {
     glBindVertexArray(0);
 }
 
+
 void ChunkRenderer::renderChunk(cppcraft::world::Chunk& chunk) {
+    auto& textureManager = TextureManager::getInstance();
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    for (int x = 0; x < CHUNK_SIZE; ++x) {
+        for (int z = 0; z < CHUNK_SIZE; ++z) {
+            for (int y = 0; y < CHUNK_HEIGHT; ++y) {
+                const auto& block = chunk.getBlock(x, y, z);
+                textureManager.getTexture(block.GetType())->bind();
+                glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+            }
+        }
+    }
     glBindVertexArray(0);
 }
 

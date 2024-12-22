@@ -22,7 +22,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/cmake/archive)
 
 
 # Get all source files with hot reload
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.cpp", "src/*.c")
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.cpp" "src/*.c")
 
 # Add executable
 add_executable(${PROJECT_NAME} 
@@ -40,8 +40,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/external/glm"
 )
 
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    "${CMAKE_CURRENT_SOURCE_DIR}/shaders"
-    "$<TARGET_FILE_DIR:${PROJECT_NAME}>/shaders"
+add_custom_target(copy_assets
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/copy-assets.cmake
 )
+
+add_dependencies(${PROJECT_NAME} copy_assets)

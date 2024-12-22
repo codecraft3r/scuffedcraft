@@ -7,6 +7,8 @@
 #include "render/shader.h"
 #include "render/chunk_renderer.h"
 #include "render/shader_locations.h"
+#include "render/texture_manager.h"
+#include "render/texture_locations.h"
 
 
 #include "world/chunk.h"
@@ -42,13 +44,20 @@ namespace cppcraft {
 
         glViewport(0, 0, 800, 600);
         glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+
+        auto& textureManager = cppcraft::render::TextureManager::getInstance();
+        textureManager.loadTexture(world::BlockType::STONE, STONE_TEXTURE_PATH);
+        textureManager.loadTexture(world::BlockType::FALLBACK, FALLBACK_TEXTURE_PATH);
         
         unsigned int shaderProgram = render::createShaderProgram(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
 
         world::Chunk chunk(0, 0);
         world::ChunkGenerator chunkGenerator;
-        chunkGenerator.generateChunk(chunk);
 
+        std::cout << "Generating chunk" << std::endl;
+        chunkGenerator.generateChunk(chunk);
+        std::cout << "Chunk generated" << std::endl;
+        
         render::ChunkRenderer chunkRenderer = render::ChunkRenderer();
         chunkRenderer.initializeChunk(chunk);
 

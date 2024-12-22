@@ -12,8 +12,11 @@ enum class BlockType
     GRASS,
     STONE,
     WOOD,
-    LEAVES
+    LEAVES,
+    FALLBACK
 };
+
+const std::string GetBlockTypeName(BlockType type);
 
 class Block
 {
@@ -25,7 +28,6 @@ public:
     Block(BlockType type, Position position);
     BlockType GetType() const;
     Position GetPosition() const;
-    cppcraft::render::Texture GetTexture();
     ~Block();
 };
 

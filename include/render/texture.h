@@ -6,13 +6,12 @@ namespace cppcraft::render {
 
 class Texture {
 public:
+    Texture();
     Texture(const std::string& path);
     ~Texture();
-
-    void bind() const;
-
+    void bind();
 private:
-    GLuint textureID;
+    GLuint glTexture;
 };
 
 } // namespace cppcraft::render
