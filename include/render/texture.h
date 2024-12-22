@@ -8,6 +8,7 @@ class Texture {
 public:
     Texture();
     Texture(const std::string& path);
+    int getGlTexture() { return glTexture; }
     ~Texture();
     void bind();
 private:

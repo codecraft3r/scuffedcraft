@@ -1,8 +1,8 @@
 #pragma once
 #include "world/block.h"
 
-#define CHUNK_SIZE 16
-#define CHUNK_HEIGHT 256
+#define CHUNK_SIZE 16 // 0-16 inclusive
+#define CHUNK_HEIGHT 255 // 0-255 inclusive
 
 namespace cppcraft::world {
 

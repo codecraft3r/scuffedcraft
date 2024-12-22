@@ -11,6 +11,7 @@ namespace cppcraft::render {
             void updateCameraVectors();
             void processKeyboard(float deltaTime, bool forward, bool backward, bool left, bool right);
             void processMouseMovement(float xoffset, float yoffset, bool constrainPitch = true);
+            bool isInFrustum(const glm::vec3& point);
 
         private:
             glm::vec3 position;
@@ -26,5 +27,8 @@ namespace cppcraft::render {
             float far;
             glm::mat4 viewMatrix;
             glm::mat4 projectionMatrix;
+            glm::vec4 frustumPlanes[6];
+
+            void updateFrustumPlanes();
     };
 }

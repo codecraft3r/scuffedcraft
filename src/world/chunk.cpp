@@ -12,6 +12,11 @@ Chunk::~Chunk() {
 }
 
 Block& Chunk::getBlock(int x, int y, int z) {
+    if (x < 0 || x > CHUNK_SIZE || y < 0 || y > CHUNK_HEIGHT || z < 0 || z > CHUNK_SIZE) {
+        static Block nullBlock(BlockType::AIR, Position(-INT16_MAX,-INT16_MAX,-INT16_MAX));
+        //std::cerr << "Attempted block access at " << x << ", " << y << ", " << z << " was out of chunk bounds" << std::endl;
+        return nullBlock;
+    }
     return blocks[x + CHUNK_SIZE * (z + CHUNK_SIZE * y)];
 }
 
@@ -20,6 +25,10 @@ std::array<int16_t, 2> Chunk::getChunkPosition() const {
 }
 
 void Chunk::setBlock(int x, int y, int z, const Block& block) {
+    if (x < 0 || x > CHUNK_SIZE || y < 0 || y > CHUNK_HEIGHT || z < 0 || z > CHUNK_SIZE) {
+        std::cerr << "Attempted block set at " << x << ", " << y << ", " << z << " was out of chunk bounds" << std::endl;
+        return;
+    }
     blocks[x + CHUNK_SIZE * (z + CHUNK_SIZE * y)] = block;
 }
 

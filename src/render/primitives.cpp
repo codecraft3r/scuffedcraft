@@ -2,7 +2,7 @@
 
 namespace cppcraft::render {
 
-Shape PrimitiveShapes::createCube(float size, const glm::vec3& color) {
+PrimitveShape PrimitveShape::createCube(float size, const glm::vec3& color) {
     float halfSize = size / 2.0f;
     std::vector<Vertex> vertices = {
         // Front face
@@ -52,10 +52,10 @@ Shape PrimitiveShapes::createCube(float size, const glm::vec3& color) {
         20, 21, 22, 22, 23, 20
     };
 
-    return Shape(vertices, indices);
+    return PrimitveShape(vertices, indices);
 }
 
-Shape PrimitiveShapes::createPyramid(float baseSize, float height, const glm::vec3& color) {
+PrimitveShape PrimitveShape::createPyramid(float baseSize, float height, const glm::vec3& color) {
     float halfBase = baseSize / 2.0f;
     std::vector<Vertex> vertices = {
         // Base
@@ -91,7 +91,15 @@ Shape PrimitiveShapes::createPyramid(float baseSize, float height, const glm::ve
         13, 14, 15
     };
 
-    return Shape(vertices, indices);
+    return PrimitveShape(vertices, indices);
 }
+
+// Define face indices for each face of the cube
+const std::vector<GLuint> PrimitveShape::frontFaceIndices = {0, 1, 2, 2, 3, 0};
+const std::vector<GLuint> PrimitveShape::backFaceIndices = {4, 5, 6, 6, 7, 4};
+const std::vector<GLuint> PrimitveShape::leftFaceIndices = {8, 9, 10, 10, 11, 8};
+const std::vector<GLuint> PrimitveShape::rightFaceIndices = {12, 13, 14, 14, 15, 12};
+const std::vector<GLuint> PrimitveShape::topFaceIndices = {16, 17, 18, 18, 19, 16};
+const std::vector<GLuint> PrimitveShape::bottomFaceIndices = {20, 21, 22, 22, 23, 20};
 
 } // namespace cppcraft::render

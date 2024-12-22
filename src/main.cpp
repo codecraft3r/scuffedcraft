@@ -86,10 +86,8 @@ namespace cppcraft {
             glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
             glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
             glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
-
-            // render cube
            
-            chunkRenderer.renderChunk(chunk);
+            chunkRenderer.renderChunk(chunk, camera);
 
 
             window.swapBuffers();
