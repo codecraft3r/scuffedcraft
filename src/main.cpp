@@ -43,7 +43,7 @@ namespace cppcraft {
         Window window = Window(800, 600, "CppCraft");
 
         glViewport(0, 0, 800, 600);
-        glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
         auto& textureManager = cppcraft::render::TextureManager::getInstance();
         textureManager.loadTexture(world::BlockType::STONE, STONE_TEXTURE_PATH);
@@ -67,6 +67,7 @@ namespace cppcraft {
         glfwSetMouseButtonCallback(window.getGLFWwindow(), mouse_button_callback);
 
         initOpenGLOrExit();
+        glDisable(GL_CULL_FACE);
         float lastFrame = 0.0f;
         while (!window.shouldClose()) {
             // move camera
@@ -87,7 +88,7 @@ namespace cppcraft {
             glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
             glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
            
-            chunkRenderer.renderChunk(chunk, camera);
+            chunkRenderer.renderChunk(chunk, camera, shaderProgram);
 
 
             window.swapBuffers();

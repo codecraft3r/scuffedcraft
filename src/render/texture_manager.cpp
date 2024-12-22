@@ -18,7 +18,8 @@ void TextureManager::loadTexture(const cppcraft::world::BlockType blockType, con
 std::shared_ptr<Texture> TextureManager::getTexture(const cppcraft::world::BlockType blockType) {
     auto it = textures.find(blockType);
     if (it == textures.end()) {
-        throw std::runtime_error("Texture not found for the given block type " + cppcraft::world::GetBlockTypeName(blockType));
+        std::cerr << "Texture for block type " << cppcraft::world::GetBlockTypeName(blockType) << " not found, using fallback texture" << std::endl;
+        return textures[cppcraft::world::BlockType::FALLBACK];
     }
     return it->second;
 }

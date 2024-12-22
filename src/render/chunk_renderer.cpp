@@ -1,7 +1,6 @@
 #include "render/chunk_renderer.h"
 #include "world/chunk.h"
 #include "render/texture_manager.h"
-#include "render/primitives.h"
 #include <iostream>
 
 namespace cppcraft::render {
@@ -40,48 +39,37 @@ void ChunkRenderer::generateMesh(cppcraft::world::Chunk& chunk) {
 }
 
 void ChunkRenderer::addBlockMesh(cppcraft::world::Chunk& chunk, const cppcraft::world::Block& block, int x, int y, int z) {
-    auto cube = PrimitveShape::createCube(1.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // Create a unit cube
+    auto cube = PrimitiveShape::createCube(1.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+    GLuint texture = TextureManager::getInstance().getTexture(block.GetType())->getGlTexture();
+
+    // Helper function to check face visibility
+    auto isFaceVisible = [&](int dx, int dy, int dz) {
+        return chunk.getBlock(x + dx, y + dy, z + dz).GetType() == cppcraft::world::BlockType::AIR;
+    };
 
     // Check visibility of each face
-    bool renderFront = (z == 0 || chunk.getBlock(x, y, z - 1).GetType() == cppcraft::world::BlockType::AIR);
-    bool renderBack = (z == CHUNK_SIZE || chunk.getBlock(x, y, z + 1).GetType() == cppcraft::world::BlockType::AIR);
-    bool renderLeft = (x == 0 || chunk.getBlock(x - 1, y, z).GetType() == cppcraft::world::BlockType::AIR);
-    bool renderRight = (x == CHUNK_SIZE || chunk.getBlock(x + 1, y, z).GetType() == cppcraft::world::BlockType::AIR);
-    bool renderTop = (y == CHUNK_HEIGHT || chunk.getBlock(x, y + 1, z).GetType() == cppcraft::world::BlockType::AIR);
-    bool renderBottom = (y == 0 || chunk.getBlock(x, y - 1, z).GetType() == cppcraft::world::BlockType::AIR);
-
-    if (renderFront || renderBack || renderLeft || renderRight || renderTop || renderBottom) {
-        GLuint texture = TextureManager::getInstance().getTexture(block.GetType())->getGlTexture();
-        for (const auto& vertex : cube.getVertices()) {
-            textureBatches[texture].vertices.push_back(vertex.position.x + x);
-            textureBatches[texture].vertices.push_back(vertex.position.y + y);
-            textureBatches[texture].vertices.push_back(vertex.position.z + z);
-        }
-
-        if (renderFront) {
-            addFaceIndices(cube.frontFaceIndices, texture);
-        }
-        if (renderBack) {
-            addFaceIndices(cube.backFaceIndices, texture);
-        }
-        if (renderLeft) {
-            addFaceIndices(cube.leftFaceIndices, texture);
-        }
-        if (renderRight) {
-            addFaceIndices(cube.rightFaceIndices, texture);
-        }
-        if (renderTop) {
-            addFaceIndices(cube.topFaceIndices, texture);
-        }
-        if (renderBottom) {
-            addFaceIndices(cube.bottomFaceIndices, texture);
-        }
-    }
+    if (z == 0 || isFaceVisible(0, 0, -1)) addVerticesForFace(cube, PrimitiveShape::frontFaceIndices, x, y, z, texture);
+    if (z == CHUNK_SIZE - 1 || isFaceVisible(0, 0, 1)) addVerticesForFace(cube, PrimitiveShape::backFaceIndices, x, y, z, texture);
+    if (x == 0 || isFaceVisible(-1, 0, 0)) addVerticesForFace(cube, PrimitiveShape::leftFaceIndices, x, y, z, texture);
+    if (x == CHUNK_SIZE - 1 || isFaceVisible(1, 0, 0)) addVerticesForFace(cube, PrimitiveShape::rightFaceIndices, x, y, z, texture);
+    if (y == CHUNK_HEIGHT - 1 || isFaceVisible(0, 1, 0)) addVerticesForFace(cube, PrimitiveShape::topFaceIndices, x, y, z, texture);
+    if (y == 0 || isFaceVisible(0, -1, 0)) addVerticesForFace(cube, PrimitiveShape::bottomFaceIndices, x, y, z, texture);
 }
 
-void ChunkRenderer::addFaceIndices(const std::vector<GLuint>& faceIndices, GLuint texture) {
+void ChunkRenderer::addVerticesForFace(const PrimitiveShape& shape, const std::vector<GLuint>& faceIndices, int x, int y, int z, GLuint texture) {
+    auto& batch = textureBatches[texture];
+
     for (const auto& index : faceIndices) {
-        textureBatches[texture].indices.push_back(index + textureBatches[texture].vertices.size() / 3 - 8); // Adjust index based on the number of vertices
+        glm::vec3 vertex = shape.getVertices().at(index).position;
+        vertex += glm::vec3(x, y, z);
+        batch.vertices.push_back(vertex.x);
+        batch.vertices.push_back(vertex.y);
+        batch.vertices.push_back(vertex.z);
+    }
+
+    GLuint offset = batch.vertices.size() / 3 - faceIndices.size();
+    for (const auto& index : faceIndices) {
+        batch.indices.push_back(offset + index);
     }
 }
 
@@ -96,36 +84,52 @@ void ChunkRenderer::setupMesh() {
 
     // Vertex positions
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+
+    // Texture coordinates
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
     glBindVertexArray(0);
 }
 
-void ChunkRenderer::flushDrawBatch() {
+void ChunkRenderer::flushDrawBatch(GLuint shaderProgram) {
     glBindVertexArray(VAO);
 
+    GLuint instanceVBO;
+    glGenBuffers(1, &instanceVBO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+    for (unsigned int i = 0; i < 4; i++) {
+        glEnableVertexAttribArray(3 + i);
+        glVertexAttribPointer(3 + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4) * i));
+        glVertexAttribDivisor(3 + i, 1);
+    }
+
     for (const auto& [texture, batch] : textureBatches) {
-        std::cout << "Rendering texture: " << texture << std::endl;
-        if (batch.vertices.empty() || batch.indices.empty()) {
-            continue;
-        }      
+        if (batch.vertices.empty() || batch.indices.empty()) continue;
+
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, batch.vertices.size() * sizeof(float), batch.vertices.data(), GL_STATIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, batch.indices.size() * sizeof(GLuint), batch.indices.data(), GL_STATIC_DRAW);
 
+        glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+        glBufferData(GL_ARRAY_BUFFER, batch.instanceMatrices.size() * sizeof(glm::mat4), batch.instanceMatrices.data(), GL_STATIC_DRAW);
+
         glBindTexture(GL_TEXTURE_2D, texture);
-        glDrawElements(GL_TRIANGLES, batch.indices.size(), GL_UNSIGNED_INT, 0);
+        glDrawElementsInstanced(GL_TRIANGLES, batch.indices.size(), GL_UNSIGNED_INT, 0, batch.instanceMatrices.size());
     }
 
+    glDeleteBuffers(1, &instanceVBO);
     glBindVertexArray(0);
     textureBatches.clear();
 }
 
-void ChunkRenderer::renderChunk(cppcraft::world::Chunk& chunk, Camera& camera) {
+void ChunkRenderer::renderChunk(cppcraft::world::Chunk& chunk, Camera& camera, GLuint shaderProgram) {
     generateMesh(chunk);
-    flushDrawBatch();
+    flushDrawBatch(shaderProgram);
 }
 
 } // namespace cppcraft::render

@@ -7,6 +7,7 @@ namespace cppcraft::render {
 struct Vertex {
     glm::vec3 position;
     glm::vec3 color;
+    glm::vec2 texCoord;
 };
 
 class Shape {

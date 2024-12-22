@@ -6,14 +6,14 @@
 
 namespace cppcraft::render {
 
-class PrimitveShape : public Shape {
+class PrimitiveShape : public Shape {
 private:
-    PrimitveShape(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices) : Shape(vertices, indices) {}
+    PrimitiveShape(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices) : Shape(vertices, indices) {}
 
     void addFaceIndices(const std::vector<GLuint>& faceIndices);
 public:
-    static PrimitveShape createCube(float size, const glm::vec3& color);
-    static PrimitveShape createPyramid(float baseSize, float height, const glm::vec3& color);
+    static PrimitiveShape createCube(float size, const glm::vec3& color);
+    static PrimitiveShape createPyramid(float baseSize, float height, const glm::vec3& color);
 
     static const std::vector<GLuint> frontFaceIndices;
     static const std::vector<GLuint> backFaceIndices;
